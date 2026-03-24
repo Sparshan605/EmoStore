@@ -12,6 +12,7 @@
     "@gravity-ui/uikit": "^7.35.2",
     "@heroui/react": "^3.0.1",
     "@heroui/styles": "^3.0.1",
+    "lucide-react": "^1.6.0",
     "next": "16.1.7",
     "react": "19.2.3",
     "react-dom": "19.2.3"
