@@ -15,16 +15,6 @@ export function Hero() {
               className="absolute inset-0 h-full w-full object-cover"
               src="https://i.pinimg.com/736x/47/68/6d/47686d894725a383224672f2780018d9.jpg"
             />
-
-            <Card.Footer className="z-10 mt-auto flex items-end justify-between">
-              <div>
-                <div className="text-base font-medium text-black sm:text-lg">NEO</div>
-                <div className="text-xs font-medium text-black/50 sm:text-sm">$499/m</div>
-              </div>
-              <Button className="bg-white text-black" size="sm" variant="tertiary">
-                Get now
-              </Button>
-            </Card.Footer>
           </Card>
 
           {/* Right Column: Cards Stack */}
@@ -37,10 +27,6 @@ export function Hero() {
                 loading="lazy"
                 src="https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/docs/robot1.jpeg"
               />
-              <div className="flex flex-1 flex-col justify-center gap-1">
-                <Card.Title className="text-sm">Bridging the Future</Card.Title>
-                <Card.Description className="text-xs">Today, 6:30 PM</Card.Description>
-              </div>
             </Card>
             {/* 2 */}
             <Card className="flex flex-row gap-3 p-1" variant="transparent">
@@ -50,10 +36,6 @@ export function Hero() {
                 loading="lazy"
                 src="https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/docs/avocado.jpeg"
               />
-              <div className="flex flex-1 flex-col justify-center gap-1">
-                <Card.Title className="text-sm">Avocado Hackathon</Card.Title>
-                <Card.Description className="text-xs">Wed, 4:30 PM</Card.Description>
-              </div>
             </Card>
             {/* 3 */}
             <Card className="flex flex-row gap-3 p-1" variant="transparent">
@@ -63,10 +45,6 @@ export function Hero() {
                 loading="lazy"
                 src="https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/docs/oranges.jpeg"
               />
-              <div className="flex flex-1 flex-col justify-center gap-1">
-                <Card.Title className="text-sm">Sound Electro | Beyond art</Card.Title>
-                <Card.Description className="text-xs">Fri, 8:00 PM</Card.Description>
-              </div>
             </Card>
           </div>
 
@@ -168,27 +146,6 @@ export function Hero() {
               className="absolute inset-0 h-full w-full object-cover"
               src="https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/docs/neo2.jpeg"
             />
-
-            {/* Header */}
-            <Card.Header className="z-10 text-white">
-              <Card.Title className="text-xs font-semibold tracking-wide text-black/70">
-                NEO
-              </Card.Title>
-              <Card.Description className="text-sm leading-5 font-medium text-black/50">
-                Home Robot
-              </Card.Description>
-            </Card.Header>
-
-            {/* Footer */}
-            <Card.Footer className="z-10 mt-auto flex items-center justify-between">
-              <div>
-                <div className="text-sm font-medium text-black">Available soon</div>
-                <div className="text-xs text-black/60">Get notified</div>
-              </div>
-              <Button className="bg-white text-black" size="sm" variant="tertiary">
-                Notify me
-              </Button>
-            </Card.Footer>
           </Card>
           </ div>        
           </div>
