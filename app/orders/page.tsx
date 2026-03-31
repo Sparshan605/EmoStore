@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Navbar from "@/components/navbar";
 
 const orders = [
   {
@@ -39,6 +40,8 @@ function getStatusClasses(status: string) {
 
 export default function OrdersPage() {
   return (
+  <>
+    <Navbar />
     <main className="min-h-screen bg-black text-white">
       <section className="mx-auto max-w-6xl px-6 py-12 md:px-10 lg:px-12">
         <div className="mb-12 border-b border-white/20 pb-8">
@@ -141,5 +144,6 @@ export default function OrdersPage() {
         </div>
       </section>
     </main>
+    </>
   );
 }

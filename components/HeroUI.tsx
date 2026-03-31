@@ -15,7 +15,7 @@ export function Hero() {
           <h1 className=" font-[ScreamFont] bg-gradient-to-b from-white to-gray-500 bg-clip-text text-transparent md:text-9xl leading-tight">
             exclusive emo merch
             <span className=" bg-gradient-to-b from-white to-gray-500 bg-clip-text text-transparent text-lg md:text-5xl font-light opacity-80">
-              — for the Emo Huzz
+              ----- for the Emo Huzz
             </span>
           </h1>
         </div>

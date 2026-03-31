@@ -1,4 +1,6 @@
 import Link from "next/link";
+import Navbar from "@/components/navbar";
+import Footer from "@/components/footer";
 
 const products = [
   {
@@ -47,7 +49,9 @@ const products = [
 
 export default function ShopPage() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <>
+    <Navbar />
+    <main className="min-h-screen bg-black text-white mt-10">
       <section className="mx-auto max-w-7xl px-6 py-12 md:px-10 lg:px-12">
         <div className="mb-12 border-b border-white/20 pb-8">
           <p
@@ -148,5 +152,7 @@ export default function ShopPage() {
         </div>
       </section>
     </main>
+    <Footer />
+    </>
   );
 }

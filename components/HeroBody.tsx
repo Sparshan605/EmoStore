@@ -1,4 +1,4 @@
-import { url } from "inspector";
+
 import "../app/globals.css";
 import localFont from "next/font/local";
 import Link from "next/link";
