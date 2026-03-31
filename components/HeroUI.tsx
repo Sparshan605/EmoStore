@@ -1,155 +1,58 @@
-import {CircleDollar} from "@gravity-ui/icons";
-import {Avatar, Button, Card, CloseButton, Link} from "@heroui/react";
+import "../app/globals.css";
+import localFont from "next/font/local";
+
+const screamFont = localFont({
+  src: "../public/fonts/EyesWideSuicide-vVzM.ttf",
+  variable: "--font-scream",
+});
 
 export function Hero() {
   return (
     <div className="flex w-full items-center justify-center">
-      <div className="grid w-full max-w-2xl grid-cols-12 gap-4 p-4">
-        {/* Row 3 */}
-        <div className="col-span-12 grid grid-cols-12 gap-4">
-          {/* Left Column: Card */}
-          <Card className="relative col-span-12 h-[250px] sm:h-[300px] md:col-span-8 md:h-[350px]">
+      <div className="absolute inset-0 bg-black/40" />
+        {/* Text */}
+        <div className=" ${screamFont.className} bg-gradient-to-b from-white to-gray-500 bg-clip-text text-transparent absolute inset-0 flex items-center justify-center  p-6 z-10">
+          <h1 className=" font-[ScreamFont] bg-gradient-to-b from-white to-gray-500 bg-clip-text text-transparent md:text-9xl leading-tight">
+            exclusive emo merch
+            <span className=" bg-gradient-to-b from-white to-gray-500 bg-clip-text text-transparent text-lg md:text-5xl font-light opacity-80">
+              — for the Emo Huzz
+            </span>
+          </h1>
+        </div>
+        <div className="flex  h-screen w-full overflow-hidden rounded-2xl">
+          <div className="flex-[1.6] overflow-hidden">
             <img
               alt="Emo"
-              aria-hidden="true"
-              className="absolute inset-0 h-full w-full object-cover"
-              src="https://i.pinimg.com/736x/47/68/6d/47686d894725a383224672f2780018d9.jpg"
+              src="https://i.pinimg.com/1200x/e9/2d/c2/e92dc23f8b4501663e93df6391fcbc7a.jpg"
+              className="h-full w-full object-cover object-[center_40%]"
             />
-          </Card>
+          </div>
 
-          {/* Right Column: Cards Stack */}
-          <div className="col-span-12 flex flex-col gap-2 md:col-span-4 md:justify-between md:gap-0 md:py-2">
-            {/* 1 */}
-            <Card className="flex flex-row gap-3 p-1" variant="transparent">
+          {/* Right: 3 stacked images */}
+          <div className=" flex flex-[1] flex-col">
+            <div className=" flex-1 overflow-hidden">
               <img
-                alt="Futuristic Robot"
-                className="aspect-square h-16 w-16 shrink-0 rounded-xl object-cover select-none sm:h-20 sm:w-20"
-                loading="lazy"
-                src="https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/docs/robot1.jpeg"
+                alt="model1"
+                src="https://i.pinimg.com/736x/1f/17/80/1f178031ff4e4515b0fb1d7c781185c3.jpg"
+                className="h-full w-full object-cover object-[center_12%]"
               />
-            </Card>
-            {/* 2 */}
-            <Card className="flex flex-row gap-3 p-1" variant="transparent">
+            </div>
+            {/* <div className="flex-1 overflow-hidden">
               <img
                 alt="Avocado"
-                className="aspect-square h-16 w-16 shrink-0 rounded-xl object-cover select-none sm:h-20 sm:w-20"
-                loading="lazy"
                 src="https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/docs/avocado.jpeg"
+                className="h-full w-full object-cover"
               />
-            </Card>
-            {/* 3 */}
-            <Card className="flex flex-row gap-3 p-1" variant="transparent">
+            </div> */}
+            <div className="flex-1 overflow-hidden">
               <img
-                alt="Sound Electro event"
-                className="aspect-square h-16 w-16 shrink-0 rounded-xl object-cover select-none sm:h-20 sm:w-20"
-                loading="lazy"
-                src="https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/docs/oranges.jpeg"
+                alt="model2"
+                src="https://i.pinimg.com/736x/1f/17/80/1f178031ff4e4515b0fb1d7c781185c3.jpg"
+                className="h-full w-full object-cover object-[center_88%] "
               />
-            </Card>
-          </div>
-
-
-        {/* Row 2 */}
-        <div className="col-span-12 grid grid-cols-12 gap-4">
-          {/* Left Column */}
-          <div className="col-span-12 grid grid-cols-12 gap-4 lg:col-span-6">
-            {/* Top Card */}
-            <Card className="col-span-12">
-              <div className="absolute top-3 right-3 z-10">
-                <CloseButton aria-label="Close notification" />
-              </div>
-              <Card.Header className="gap-3">
-                <CircleDollar
-                  aria-label="Dollar sign icon"
-                  className="text-primary size-8 shrink-0"
-                  role="img"
-                />
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-medium text-muted uppercase">PAYMENT</span>
-                  <Card.Title className="pr-8 text-sm sm:text-base">
-                    You can now withdraw on crypto
-                  </Card.Title>
-                  <Card.Description className="text-xs sm:text-sm">
-                    Add your wallet in settings to withdraw
-                  </Card.Description>
-                </div>
-              </Card.Header>
-              <Card.Footer>
-                <Link aria-label="Go to settings" href="#" rel="noopener noreferrer">
-                  Go to settings
-                  <Link.Icon aria-hidden="true" />
-                </Link>
-              </Card.Footer>
-            </Card>
-            {/* Bottom cards */}
-            <div className="col-span-12 grid grid-cols-12 gap-4">
-              {/* Left Card */}
-              <Card className="col-span-12 gap-2 sm:col-span-6">
-                <Card.Header>
-                  <Avatar className="size-[56px] rounded-xl">
-                    <Avatar.Image
-                      alt="Demo 1"
-                      src="https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/docs/demo1.jpg"
-                    />
-                    <Avatar.Fallback>JK</Avatar.Fallback>
-                  </Avatar>
-                </Card.Header>
-                <Card.Content className="mt-1">
-                  <p className="text-sm leading-4 font-medium">Indie Hackers</p>
-                  <p className="text-xs text-muted">148 members</p>
-                </Card.Content>
-                <Card.Footer className="flex items-center gap-2">
-                  <Avatar className="size-4">
-                    <Avatar.Image
-                      alt="John"
-                      src="https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/avatars/red.jpg"
-                    />
-                    <Avatar.Fallback>JK</Avatar.Fallback>
-                  </Avatar>
-                  <p className="text-xs text-muted">By John</p>
-                </Card.Footer>
-              </Card>
-              {/* Right Card */}
-              <Card className="col-span-12 gap-2 sm:col-span-6">
-                <Card.Header>
-                  <Avatar className="size-[56px] rounded-xl">
-                    <Avatar.Image
-                      alt="Demo 2"
-                      src="https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/docs/demo2.jpg"
-                    />
-                    <Avatar.Fallback>AB</Avatar.Fallback>
-                  </Avatar>
-                </Card.Header>
-                <Card.Content className="mt-1">
-                  <p className="text-sm leading-4 font-medium">AI Builders</p>
-                  <p className="text-xs text-muted">362 members</p>
-                </Card.Content>
-                <Card.Footer className="flex items-center gap-2">
-                  <Avatar className="size-4">
-                    <Avatar.Image
-                      alt="John"
-                      src="https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/avatars/blue.jpg"
-                    />
-                    <Avatar.Fallback>M</Avatar.Fallback>
-                  </Avatar>
-                  <p className="text-xs text-muted">By Martha</p>
-                </Card.Footer>
-              </Card>
             </div>
           </div>
-          {/* Right Column */}
-          <Card className="col-span-12 min-h-[200px] overflow-hidden rounded-3xl lg:col-span-6">
-            {/* Background image */}
-            <img
-              alt="NEO Home Robot"
-              aria-hidden="true"
-              className="absolute inset-0 h-full w-full object-cover"
-              src="https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/docs/neo2.jpeg"
-            />
-          </Card>
-          </ div>        
           </div>
       </div>
-    </div>
   );
 }

@@ -8,21 +8,22 @@ export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <nav className="bg-black text-white shadow-lg">
+        <nav className="fixed top-0 left-0 w-full z-[1000] bg-black/30 backdrop-blur text-white shadow-lg">
             <div className="max-w-7xl mx-auto px-4">
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
-                    <Link href="/" className="text-2xl font-bold text-purple-500">
+                    <Link href="/" className=" font-[screamFont] text-8xl font-bold bg-gradient-to-b from-white to-gray-500 bg-clip-text text-transparent">
                         EmoStore
                     </Link>
 
                     {/* Desktop Menu */}
                     <div className="hidden md:flex space-x-8">
-                        <Link href="/products" className="hover:text-purple-400 transition">
+                        <Link href="/shop" className="hover:text-purple-400 transition">
                             Products
                         </Link>
-                        <Link href="/bands" className="hover:text-purple-400 transition">
-                            Bands
+
+                        <Link href="/brands" className="hover:text-purple-400 transition">
+                            Goth
                         </Link>
                         <Link href="/merch" className="hover:text-purple-400 transition">
                             Merch
