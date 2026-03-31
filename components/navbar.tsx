@@ -1,4 +1,5 @@
-"use client"
+'use client';
+
 import Link from 'next/link';
 import { ShoppingCart, Search, Menu, X } from 'lucide-react';
 import { useState } from 'react';
