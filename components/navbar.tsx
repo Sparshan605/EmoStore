@@ -3,8 +3,7 @@ import { useCart } from "@/app/lib/cartContext";
 import Link from "next/link";
 import { ShoppingCart, Search, Menu, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { getCart } from "@/app/_services/cartStore";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -88,23 +87,6 @@ export default function Navbar() {
             </button>
           </div>
         </div>
-
-        {isOpen && (
-          <div className="md:hidden pb-4 space-y-2">
-            <Link href="/products" className="block py-2 hover:text-purple-400">
-              Products
-            </Link>
-            <Link href="/bands" className="block py-2 hover:text-purple-400">
-              Bands
-            </Link>
-            <Link href="/merch" className="block py-2 hover:text-purple-400">
-              Merch
-            </Link>
-            <Link href="/about" className="block py-2 hover:text-purple-400">
-              About
-            </Link>
-          </div>
-        )}
       </div>
     </nav>
   );

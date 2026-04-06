@@ -1,10 +1,10 @@
 'use client';
 
-import { useCart } from "../lib/cartContext";
+import { useCart } from "../../app/lib/cartContext";
 import { useRouter } from "next/navigation";
-import { auth, db } from "../lib/firebase";
+import { auth, db } from "../../app/lib/firebase";
 import { collection, addDoc, serverTimestamp, updateDoc, doc, increment } from "firebase/firestore";
-import { clearCart } from "../lib/cartService";
+import { clearCart } from "../../app/lib/cartService";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import Link from "next/link";

@@ -1,4 +1,4 @@
-import "../app/globals.css";
+
 import localFont from "next/font/local";
 
 const screamFont = localFont({

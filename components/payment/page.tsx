@@ -8,13 +8,14 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
-import { useCart } from "../lib/cartContext";
+import { useCart } from "../../app/lib/cartContext";
 import { useRouter } from "next/navigation";
-import { auth, db } from "../lib/firebase";
+import { auth, db } from "../../app/lib/firebase";
 import { collection, addDoc, serverTimestamp, updateDoc, doc, increment } from "firebase/firestore";
-import { clearCart } from "../lib/cartService";
+import { clearCart } from "../../app/lib/cartService";
 import Navbar from "@/components/navbar";
 import Link from "next/link";
+
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 

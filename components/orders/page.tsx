@@ -6,7 +6,7 @@ import { onAuthStateChanged, type User } from "firebase/auth";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
-import { auth, db } from "../lib/firebase";
+import { auth, db } from "../../app/lib/firebase";
 
 type OrderDoc = {
   id: string;

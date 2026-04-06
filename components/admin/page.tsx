@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { db } from "../lib/firebase";
+import { db } from "../../app/lib/firebase";
 import {
   collection, getDocs, addDoc, updateDoc, deleteDoc, doc,
 } from "firebase/firestore";
-import { logout } from "../lib/authservice";
+import { logout } from "../../app/lib/authservice";
 
 type Product = {
   id: string;

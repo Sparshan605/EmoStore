@@ -5,9 +5,9 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
-import { db } from "../lib/firebase";
+import { db } from "../../app/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
-import { useCart } from "../lib/cartContext";
+import { useCart } from "../../app/lib/cartContext";
 
 type Product = {
   id: string;
@@ -64,7 +64,7 @@ function getCreatedAtValue(value: any) {
 
 export default function ShopPage() {
   const searchParams = useSearchParams();
-  const { addItem } = useCart(); // ← moved inside component
+  const { addItem } = useCart(); 
 
   const initialCategory = normalizeCategory(searchParams.get("category"));
   const initialSearch = searchParams.get("q") ?? "";
