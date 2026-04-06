@@ -2,7 +2,9 @@
 import { useCart } from "@/app/lib/cartContext";
 import Link from "next/link";
 import { ShoppingCart, Search, Menu, X } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { getCart } from "@/app/_services/cartStore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,7 +20,6 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 w-full z-[1000] bg-black/30 backdrop-blur text-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
           <Link
             href="/"
             className="font-[screamFont] text-8xl font-bold bg-gradient-to-b from-white to-gray-500 bg-clip-text text-transparent mt-8"
@@ -26,7 +27,6 @@ export default function Navbar() {
             EmoStore
           </Link>
 
-          {/* Desktop Menu */}
           <div className="hidden md:flex space-x-8">
             <Link href="/" className="hover:text-purple-400 transition">
               Home
@@ -42,9 +42,7 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Icons */}
           <div className="flex items-center space-x-4">
-            {/* Search */}
             <div
               className="flex items-center"
               onMouseLeave={() => setSearchExpanded(false)}
@@ -69,7 +67,7 @@ export default function Navbar() {
                 />
               </div>
               <button
-                className=" ml-2 hover:text-purple-400 transition"
+                className="ml-2 hover:text-purple-400 transition"
                 onClick={expand}
               >
                 <Search size={20} />
@@ -85,14 +83,12 @@ export default function Navbar() {
             )}
           </Link>
 
-            {/* Mobile Menu Button */}
             <button className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
               {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
         {isOpen && (
           <div className="md:hidden pb-4 space-y-2">
             <Link href="/products" className="block py-2 hover:text-purple-400">
