@@ -6,6 +6,7 @@ import {
   collection, getDocs, addDoc, updateDoc, deleteDoc, doc,
 } from "firebase/firestore";
 import { logout } from "../../app/lib/authservice";
+import { PRODUCT_CATEGORIES } from "../../app/lib/constants";
 
 type Product = {
   id: string;
@@ -95,9 +96,9 @@ export default function AdminPage() {
   };
 
   const lanes = [
-  { tag: "New", label: "New Arrivals" },
-  { tag: "Popular", label: "Most Popular" },
-    ];
+    { tag: "New", label: "New Arrivals" },
+    { tag: "Popular", label: "Most Popular" },
+  ];
 
   return (
     <main className="min-h-screen bg-black text-white px-6 py-12">
@@ -127,10 +128,9 @@ export default function AdminPage() {
             <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}
               className="bg-zinc-900 border border-white/20 rounded-xl px-4 py-3 text-sm outline-none focus:border-purple-400 transition text-white/80">
               <option value="">Select category</option>
-              <option value="Apparel">Apparel</option>
-              <option value="Outerwear">Outerwear</option>
-              <option value="Accessory">Accessory</option>
-              <option value="Bag">Bag</option>
+              {PRODUCT_CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
             </select>
             <input type="number" placeholder="Stock quantity" value={form.stock}
               onChange={(e) => setForm({ ...form, stock: Number(e.target.value) })}
@@ -230,52 +230,42 @@ export default function AdminPage() {
 
         {/* Drag to Tag Lanes */}
         <section>
-        <h2 className="text-xl uppercase tracking-wider mb-2" style={{ fontFamily: '"Courier New", monospace' }}>
-            Tag Lanes
-        </h2>
-        <p className="text-xs text-white/30 mb-6" style={{ fontFamily: "Work Sans, sans-serif" }}>
+          <h2 className="text-xl uppercase tracking-wider mb-2" style={{ fontFamily: '"Courier New", monospace' }}>Tag Lanes</h2>
+          <p className="text-xs text-white/30 mb-6" style={{ fontFamily: "Work Sans, sans-serif" }}>
             Drag a product row from the table above and drop it into a lane to assign its tag.
-        </p>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {lanes.map((lane) => (
-            <div
+              <div
                 key={lane.tag}
                 onDragOver={(e) => { e.preventDefault(); setDragOver(lane.tag); }}
                 onDragLeave={() => setDragOver(null)}
                 onDrop={() => handleDrop(lane.tag)}
                 className={`min-h-48 rounded-2xl border-2 border-dashed p-4 transition-all
-                ${dragOver === lane.tag
-                    ? "border-purple-400 bg-purple-400/5"
-                    : "border-white/10 bg-zinc-950"}`}
-            >
+                  ${dragOver === lane.tag ? "border-purple-400 bg-purple-400/5" : "border-white/10 bg-zinc-950"}`}
+              >
                 <p className="text-xs uppercase tracking-widest text-white/40 mb-4" style={{ fontFamily: "Work Sans, sans-serif" }}>
-                {lane.label}
+                  {lane.label}
                 </p>
                 <div className="flex flex-col gap-2">
-                {products.filter((p) => p.tag === lane.tag).map((p) => (
+                  {products.filter((p) => p.tag === lane.tag).map((p) => (
                     <div key={p.id} className="flex items-center justify-between bg-zinc-900 rounded-xl px-3 py-2 border border-white/5">
-                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3">
                         {p.imageUrl
-                        ? <img src={p.imageUrl} alt={p.name} className="w-8 h-8 rounded-lg object-cover" />
-                        : <div className="w-8 h-8 rounded-lg bg-zinc-800" />}
+                          ? <img src={p.imageUrl} alt={p.name} className="w-8 h-8 rounded-lg object-cover" />
+                          : <div className="w-8 h-8 rounded-lg bg-zinc-800" />}
                         <span className="text-sm" style={{ fontFamily: '"Courier New", monospace' }}>{p.name}</span>
+                      </div>
+                      <button onClick={() => handleRemoveTag(p.id)} className="text-white/20 hover:text-red-400 text-xs transition ml-2">✕</button>
                     </div>
-                    <button
-                        onClick={() => handleRemoveTag(p.id)}
-                        className="text-white/20 hover:text-red-400 text-xs transition ml-2"
-                    >
-                        ✕
-                    </button>
-                    </div>
-                ))}
-                {products.filter((p) => p.tag === lane.tag).length === 0 && (
+                  ))}
+                  {products.filter((p) => p.tag === lane.tag).length === 0 && (
                     <p className="text-xs text-white/20 text-center py-6">Drop here</p>
-                )}
+                  )}
                 </div>
-            </div>
+              </div>
             ))}
-        </div>
+          </div>
         </section>
 
       </div>

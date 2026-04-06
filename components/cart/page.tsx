@@ -2,47 +2,22 @@
 
 import { useCart } from "../../app/lib/cartContext";
 import { useRouter } from "next/navigation";
-import { auth, db } from "../../app/lib/firebase";
-import { collection, addDoc, serverTimestamp, updateDoc, doc, increment } from "firebase/firestore";
-import { clearCart } from "../../app/lib/cartService";
+import { auth } from "../../app/lib/firebase";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import Link from "next/link";
 
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, clearItems, total, count } = useCart();
+  const { items, removeItem, updateQuantity, total, count } = useCart();
   const router = useRouter();
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     const user = auth.currentUser;
-    if (!user) { router.push("/login"); return; }
-    router.push("/checkout");
-
-    try {
-      // save order to firestore
-      await addDoc(collection(db, "orders"), {
-        userId: user.uid,
-        items: items.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })),
-        total: total.toFixed(2),
-        status: "Processing",
-        createdAt: serverTimestamp(),
-      });
-
-      // decrement stock for each item
-      for (const item of items) {
-        await updateDoc(doc(db, "products", item.id), {
-          stock: increment(-item.quantity),
-        });
-      }
-
-      // clear cart
-      await clearCart(user.uid);
-      clearItems();
-
-      router.push("/orders");
-    } catch (e) {
-      console.error(e);
+    if (!user) {
+      router.push("/login");
+      return;
     }
+    router.push("/checkout");
   };
 
   return (

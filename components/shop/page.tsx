@@ -5,9 +5,10 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
-import { db } from "../../app/lib/firebase";
+import { db } from "@/app/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
-import { useCart } from "../../app/lib/cartContext";
+import { useCart } from "@/app/lib/cartContext";
+import { SHOP_CATEGORIES } from "@/app/lib/constants";
 
 type Product = {
   id: string;
@@ -21,10 +22,6 @@ type Product = {
   createdAt?: unknown;
 };
 
-const categories = [
-  "All", "Apparel", "Outerwear", "Accessory", "Bag", "Shoes", "Jewelry", "Merch",
-];
-
 const sortOptions = [
   { value: "featured", label: "Featured" },
   { value: "name-asc", label: "Name A–Z" },
@@ -36,7 +33,7 @@ const sortOptions = [
 
 function normalizeCategory(value: string | null) {
   if (!value) return "All";
-  const match = categories.find((c) => c.toLowerCase() === value.toLowerCase());
+  const match = SHOP_CATEGORIES.find((c) => c.toLowerCase() === value.toLowerCase());
   return match ?? "All";
 }
 
@@ -64,7 +61,7 @@ function getCreatedAtValue(value: any) {
 
 export default function ShopPage() {
   const searchParams = useSearchParams();
-  const { addItem } = useCart(); 
+  const { addItem } = useCart();
 
   const initialCategory = normalizeCategory(searchParams.get("category"));
   const initialSearch = searchParams.get("q") ?? "";
@@ -77,7 +74,9 @@ export default function ShopPage() {
   const [error, setError] = useState("");
   const [addedId, setAddedId] = useState<string | null>(null);
 
-  const handleAdd = (product: Product) => {
+  const handleAdd = (e: React.MouseEvent, product: Product) => {
+    e.preventDefault();
+    e.stopPropagation();
     addItem({
       id: product.id,
       name: product.name,
@@ -96,10 +95,7 @@ export default function ShopPage() {
       setError("");
       try {
         const snap = await getDocs(collection(db, "products"));
-        const nextProducts = snap.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Product[];
+        const nextProducts = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Product[];
         if (!cancelled) setProducts(nextProducts);
       } catch (err) {
         console.error("Failed to load products:", err);
@@ -159,12 +155,8 @@ export default function ShopPage() {
       <main className="min-h-screen bg-black text-white mt-10">
         <section className="mx-auto max-w-7xl px-6 py-12 md:px-10 lg:px-12">
           <div className="mb-12 border-b border-white/20 pb-8">
-            <p className="mb-3 text-sm uppercase tracking-[0.35em] text-white/60" style={{ fontFamily: "Work Sans, sans-serif" }}>
-              Emo Store
-            </p>
-            <h1 className="text-5xl uppercase tracking-wider md:text-7xl" style={{ fontFamily: '"Courier New", monospace' }}>
-              Shop
-            </h1>
+            <p className="mb-3 text-sm uppercase tracking-[0.35em] text-white/60" style={{ fontFamily: "Work Sans, sans-serif" }}>Emo Store</p>
+            <h1 className="text-5xl uppercase tracking-wider md:text-7xl" style={{ fontFamily: '"Courier New", monospace' }}>Shop</h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-white/80 md:text-lg" style={{ fontFamily: "Work Sans, sans-serif" }}>
               A clean showcase of the current collection. Search, sort, and browse the mood without clutter.
             </p>
@@ -172,9 +164,7 @@ export default function ShopPage() {
 
           <div className="mb-8 grid gap-4 lg:grid-cols-[1.25fr_0.75fr_auto]">
             <div>
-              <label htmlFor="product-search" className="mb-2 block text-xs uppercase tracking-[0.22em] text-white/50" style={{ fontFamily: "Work Sans, sans-serif" }}>
-                Search
-              </label>
+              <label htmlFor="product-search" className="mb-2 block text-xs uppercase tracking-[0.22em] text-white/50" style={{ fontFamily: "Work Sans, sans-serif" }}>Search</label>
               <input
                 id="product-search"
                 type="text"
@@ -186,9 +176,7 @@ export default function ShopPage() {
               />
             </div>
             <div>
-              <label htmlFor="sort-by" className="mb-2 block text-xs uppercase tracking-[0.22em] text-white/50" style={{ fontFamily: "Work Sans, sans-serif" }}>
-                Sort
-              </label>
+              <label htmlFor="sort-by" className="mb-2 block text-xs uppercase tracking-[0.22em] text-white/50" style={{ fontFamily: "Work Sans, sans-serif" }}>Sort</label>
               <select
                 id="sort-by"
                 value={sortBy}
@@ -209,7 +197,7 @@ export default function ShopPage() {
           </div>
 
           <div className="mb-10 flex flex-wrap gap-2">
-            {categories.map((cat) => (
+            {SHOP_CATEGORIES.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelected(cat)}
@@ -269,7 +257,11 @@ export default function ShopPage() {
               {visibleProducts.map((product) => {
                 const oos = outOfStock(product.stock);
                 return (
-                  <article key={product.id} className="group rounded-2xl border border-white/10 bg-zinc-800 p-6 transition duration-300 hover:-translate-y-1 hover:border-white/30">
+                  <Link
+                    key={product.id}
+                    href={`/product/${product.id}`}
+                    className="group rounded-2xl border border-white/10 bg-zinc-800 p-6 transition duration-300 hover:-translate-y-1 hover:border-white/30 block"
+                  >
                     <div className="mb-5 flex items-start justify-between gap-4">
                       <span className="rounded-full border border-white/20 px-3 py-1 text-xs uppercase tracking-[0.22em] text-white/60" style={{ fontFamily: "Work Sans, sans-serif" }}>
                         {product.category}
@@ -311,7 +303,7 @@ export default function ShopPage() {
                         </span>
                       </div>
                       <button
-                        onClick={() => handleAdd(product)}
+                        onClick={(e) => handleAdd(e, product)}
                         disabled={oos}
                         className={`rounded-full border px-4 py-2 text-sm transition disabled:opacity-30 disabled:cursor-not-allowed ${
                           addedId === product.id
@@ -323,7 +315,7 @@ export default function ShopPage() {
                         {addedId === product.id ? "Added ✓" : "Add to Cart"}
                       </button>
                     </div>
-                  </article>
+                  </Link>
                 );
               })}
             </div>

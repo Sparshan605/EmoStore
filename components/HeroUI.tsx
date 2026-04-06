@@ -1,5 +1,7 @@
 
 import localFont from "next/font/local";
+import "../app/globals.css";
+
 
 const screamFont = localFont({
   src: "../public/fonts/EyesWideSuicide-vVzM.ttf",
@@ -37,13 +39,6 @@ export function Hero() {
               className="h-full w-full object-cover object-[center_12%]"
             />
           </div>
-          {/* <div className="flex-1 overflow-hidden">
-              <img
-                alt="Avocado"
-                src="https://heroui-assets.nyc3.cdn.digitaloceanspaces.com/docs/avocado.jpeg"
-                className="h-full w-full object-cover"
-              />
-            </div> */}
           <div className="flex-1 overflow-hidden">
             <img
               alt="model2"
