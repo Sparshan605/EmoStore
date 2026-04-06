@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -7,6 +7,7 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { db } from "../lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
+import { addToCart } from "@/app/_services/cartStore";
 
 type Product = {
   id: string;
@@ -82,6 +83,18 @@ export default function ShopPage() {
   const [sortBy, setSortBy] = useState("featured");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [addedId, setAddedId] = useState<string | null>(null);
+
+  function handleAdd(product: Product) {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: parsePrice(product.price),
+      category: product.category,
+    });
+    setAddedId(product.id);
+    setTimeout(() => setAddedId(null), 1000);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -164,7 +177,6 @@ export default function ShopPage() {
             total += getCreatedAtValue(product.createdAt) / 1_000_000_000_000;
             return total;
           };
-
           return score(b) - score(a);
         }
       }
@@ -174,7 +186,6 @@ export default function ShopPage() {
   }, [products, searchTerm, selected, sortBy]);
 
   const hasActiveFilters = selected !== "All" || searchTerm.trim().length > 0;
-
   const outOfStock = (stock: number) => (stock ?? 0) <= 0;
 
   const resetFilters = () => {
@@ -195,20 +206,18 @@ export default function ShopPage() {
             >
               Emo Store
             </p>
-
             <h1
               className="text-5xl uppercase tracking-wider md:text-7xl"
               style={{ fontFamily: '"Courier New", monospace' }}
             >
               Shop
             </h1>
-
             <p
               className="mt-5 max-w-2xl text-base leading-7 text-white/80 md:text-lg"
               style={{ fontFamily: "Work Sans, sans-serif" }}
             >
-              A clean showcase of the current collection. Search, sort, and browse
-              the mood without clutter.
+              A clean showcase of the current collection. Search, sort, and
+              browse the mood without clutter.
             </p>
           </div>
 
@@ -281,7 +290,6 @@ export default function ShopPage() {
                 {cat}
               </button>
             ))}
-
             {hasActiveFilters && (
               <button
                 onClick={resetFilters}
@@ -300,9 +308,10 @@ export default function ShopPage() {
             >
               {loading
                 ? "Loading products..."
-                : `${visibleProducts.length} item${visibleProducts.length === 1 ? "" : "s"} found`}
+                : `${visibleProducts.length} item${
+                    visibleProducts.length === 1 ? "" : "s"
+                  } found`}
             </p>
-
             <p
               className="text-xs uppercase tracking-[0.22em] text-white/30"
               style={{ fontFamily: "Work Sans, sans-serif" }}
@@ -368,7 +377,6 @@ export default function ShopPage() {
             <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
               {visibleProducts.map((product) => {
                 const oos = outOfStock(product.stock);
-
                 return (
                   <article
                     key={product.id}
@@ -381,7 +389,6 @@ export default function ShopPage() {
                       >
                         {product.category}
                       </span>
-
                       {product.tag && (
                         <span
                           className={`rounded-full px-3 py-1 text-xs uppercase tracking-[0.22em] ${
@@ -406,7 +413,6 @@ export default function ShopPage() {
                       ) : (
                         <div className="h-full w-full bg-gradient-to-b from-zinc-700 to-zinc-900" />
                       )}
-
                       {oos && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm">
                           <span
@@ -452,11 +458,16 @@ export default function ShopPage() {
                       </div>
 
                       <button
+                        onClick={() => handleAdd(product)}
                         disabled={oos}
-                        className="rounded-full border border-white/30 px-4 py-2 text-sm transition hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-30"
+                        className={`rounded-full border px-4 py-2 text-sm transition disabled:cursor-not-allowed disabled:opacity-30 ${
+                          addedId === product.id
+                            ? "border-emerald-500 bg-emerald-500/20 text-emerald-400"
+                            : "border-white/30 hover:bg-white hover:text-black"
+                        }`}
                         style={{ fontFamily: "Work Sans, sans-serif" }}
                       >
-                        Add to Cart
+                        {addedId === product.id ? "Added ✓" : "Add to Cart"}
                       </button>
                     </div>
                   </article>
