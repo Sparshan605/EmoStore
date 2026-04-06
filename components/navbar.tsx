@@ -1,5 +1,5 @@
 "use client";
-
+import { useCart } from "@/app/lib/cartContext";
 import Link from "next/link";
 import { ShoppingCart, Search, Menu, X } from "lucide-react";
 import { useState, useRef } from "react";
@@ -8,7 +8,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchExpanded, setSearchExpanded] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-
+  const { count } = useCart();
   const expand = () => {
     setSearchExpanded(true);
     setTimeout(() => inputRef.current?.focus(), 150);
@@ -21,7 +21,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link
             href="/"
-            className="font-[screamFont] text-8xl font-bold bg-gradient-to-b from-white to-gray-500 bg-clip-text text-transparent"
+            className="font-[screamFont] text-8xl font-bold bg-gradient-to-b from-white to-gray-500 bg-clip-text text-transparent mt-8"
           >
             EmoStore
           </Link>
@@ -61,11 +61,11 @@ export default function Navbar() {
                   type="text"
                   placeholder="Search..."
                   className={`transition-all duration-300 bg-transparent border-b border-purple-400 outline-none text-sm placeholder:text-white/40
-                                    ${
-                                      searchExpanded
-                                        ? "w-40 opacity-100 mr-2"
-                                        : "w-0 opacity-0 pointer-events-none"
-                                    }`}
+                      ${
+                      searchExpanded
+                      ? "w-40 opacity-100 mr-2"
+                    : "w-0 opacity-0 pointer-events-none"
+                  }`}
                 />
               </div>
               <button
@@ -76,9 +76,14 @@ export default function Navbar() {
               </button>
             </div>
 
-            <Link href="/payment" className="hover:text-purple-400 transition">
-              <ShoppingCart size={20} />
-            </Link>
+            <Link href="/cart" className="hover:text-purple-400 transition relative">
+            <ShoppingCart size={20} />
+            {count > 0 && (
+              <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-purple-500 text-white text-[10px] flex items-center justify-center">
+                {count}
+              </span>
+            )}
+          </Link>
 
             {/* Mobile Menu Button */}
             <button className="md:hidden" onClick={() => setIsOpen(!isOpen)}>

@@ -7,6 +7,7 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { db } from "../lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
+import { useCart } from "@/app/lib/cartContext";
 
 type Product = {
   id: string;
@@ -30,6 +31,8 @@ const categories = [
   "Jewelry",
   "Merch",
 ];
+
+const { addItem } = useCart();
 
 const sortOptions = [
   { value: "featured", label: "Featured" },
@@ -453,8 +456,14 @@ export default function ShopPage() {
 
                       <button
                         disabled={oos}
-                        className="rounded-full border border-white/30 px-4 py-2 text-sm transition hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-30"
-                        style={{ fontFamily: "Work Sans, sans-serif" }}
+                        onClick={() => addItem({
+                          id: product.id,
+                          name: product.name,
+                          price: product.price,
+                          imageUrl: product.imageUrl,
+                          category: product.category,
+                        })}
+                        className="rounded-full border border-white/30 px-4 py-2 text-sm transition hover:bg-white hover:text-black disabled:opacity-30 disabled:cursor-not-allowed"
                       >
                         Add to Cart
                       </button>
