@@ -16,6 +16,7 @@ export default function CartPage() {
   const handleCheckout = async () => {
     const user = auth.currentUser;
     if (!user) { router.push("/login"); return; }
+    router.push("/checkout");
 
     try {
       // save order to firestore
