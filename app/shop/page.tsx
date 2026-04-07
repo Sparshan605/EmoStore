@@ -9,6 +9,7 @@ import { db } from "@/app/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import { useCart } from "@/app/lib/cartContext";
 import { SHOP_CATEGORIES } from "@/app/lib/constants";
+import { Suspense } from "react";
 
 type Product = {
   id: string;
@@ -59,7 +60,7 @@ function getCreatedAtValue(value: any) {
   return 0;
 }
 
-export default function ShopPage() {
+  function ShopContent() {
   const searchParams = useSearchParams();
   const { addItem } = useCart();
 
@@ -152,6 +153,7 @@ export default function ShopPage() {
   return (
     <>
       <Navbar />
+      
       <main className="min-h-screen bg-black text-white mt-10">
         <section className="mx-auto max-w-7xl px-6 py-12 md:px-10 lg:px-12">
           <div className="mb-12 border-b border-white/20 pb-8">
@@ -324,5 +326,19 @@ export default function ShopPage() {
       </main>
       <Footer />
     </>
+  );
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <p className="text-white/40 text-sm uppercase tracking-widest" style={{ fontFamily: "Work Sans, sans-serif" }}>
+          Loading...
+        </p>
+      </div>
+    }>
+      <ShopContent />
+    </Suspense>
   );
 }
