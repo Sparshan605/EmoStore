@@ -1,8 +1,8 @@
 'use client';
 
-import { useCart } from "../../app/lib/cartContext";
+import { useCart } from "../lib/cartContext";
 import { useRouter } from "next/navigation";
-import { auth } from "../../app/lib/firebase";
+import { auth } from "../lib/firebase";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import Link from "next/link";

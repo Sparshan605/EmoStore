@@ -8,13 +8,12 @@ import { onAuthStateChanged, type User as FirebaseUser } from "firebase/auth";
 import { auth } from "@/app/lib/firebase";
 import { logout } from "@/app/lib/authservice";
 
+
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchExpanded, setSearchExpanded] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
+
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+
   const userMenuRef = useRef<HTMLDivElement>(null);
   const { count } = useCart();
   const router = useRouter();
@@ -34,22 +33,6 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const expand = () => {
-    setSearchExpanded(true);
-    setTimeout(() => inputRef.current?.focus(), 150);
-  };
-
-  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && searchValue.trim()) {
-      router.push(`/shop?q=${encodeURIComponent(searchValue.trim())}`);
-      setSearchExpanded(false);
-      setSearchValue("");
-    }
-    if (e.key === "Escape") {
-      setSearchExpanded(false);
-      setSearchValue("");
-    }
-  };
 
   const handleLogout = async () => {
     await logout();
@@ -93,29 +76,8 @@ export default function Navbar() {
               {/* Search */}
               <div
                 className="flex items-center"
-                onMouseLeave={() => {
-                  if (!searchValue) setSearchExpanded(false);
-                }}
               >
-                <div
-                  className={`flex items-center transition-all duration-300 ${
-                    searchExpanded
-                      ? "border-2 border-purple-400/40 rounded-full px-3 py-1"
-                      : "border-transparent"
-                  }`}
-                >
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    value={searchValue}
-                    onChange={(e) => setSearchValue(e.target.value)}
-                    onKeyDown={handleSearch}
-                    placeholder="Search... (Enter)"
-                    className={`transition-all duration-300 bg-transparent border-b border-purple-400 outline-none text-sm placeholder:text-white/40
-                      ${searchExpanded ? "w-44 opacity-100 mr-2" : "w-0 opacity-0 pointer-events-none"}`}
-                  />
-                </div>
-                <button className="ml-2 hover:text-purple-400 transition" onClick={expand}>
+                <button className="ml-2 hover:text-purple-400 transition" onClick={() => router.push("/shop")}>
                   <Search size={20} />
                 </button>
               </div>
@@ -167,58 +129,9 @@ export default function Navbar() {
                   </Link>
                 )}
               </div>
-
-              {/* Mobile hamburger */}
-              <button className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
-                {isOpen ? <X size={24} /> : <Menu size={24} />}
-              </button>
             </div>
           </div>
         </div>
-
-        {/* Mobile menu dropdown */}
-        {isOpen && (
-          <div className="md:hidden bg-black/95 border-t border-white/10 px-4 py-4 space-y-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setIsOpen(false)}
-                className="block px-3 py-3 text-sm rounded-xl hover:bg-white/5 hover:text-purple-400 transition"
-              >
-                {link.label}
-              </Link>
-            ))}
-            <div className="border-t border-white/10 mt-3 pt-3">
-              {user ? (
-                <>
-                  <p className="px-3 py-2 text-xs text-white/40 truncate">{user.email}</p>
-                  <Link
-                    href="/orders"
-                    onClick={() => setIsOpen(false)}
-                    className="block px-3 py-3 text-sm rounded-xl hover:bg-white/5 transition"
-                  >
-                    My Orders
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full text-left px-3 py-3 text-sm text-red-400 rounded-xl hover:bg-white/5 transition"
-                  >
-                    Sign Out
-                  </button>
-                </>
-              ) : (
-                <Link
-                  href="/login"
-                  onClick={() => setIsOpen(false)}
-                  className="block px-3 py-3 text-sm rounded-xl hover:bg-white/5 hover:text-purple-400 transition"
-                >
-                  Sign In
-                </Link>
-              )}
-            </div>
-          </div>
-        )}
       </nav>
     </>
   );

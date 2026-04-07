@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from "react";
-import { login } from "../../app/lib/authservice";
-
+import { login } from "../lib/authservice";
+import "../globals.css"
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -13,16 +13,12 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
     try {
-      const { role, uid } = await login(email, password);
-      console.log("role:", role);
-      document.cookie = `token=${uid}; path=/; max-age=86400`;
-      document.cookie = `role=${role}; path=/; max-age=86400`;
+      const { uid, role } = await login(email, password);
 
-      if (role === "admin") {
-        window.location.replace("/admin");
-      } else {
-        window.location.replace("/");
-      }
+      // redirect based on role
+      if (role === "admin") window.location.replace("/admin");
+      else window.location.replace("/account");
+
     } catch (e) {
       setError("Invalid email or password.");
       setLoading(false);

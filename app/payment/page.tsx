@@ -8,11 +8,11 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
-import { useCart } from "../../app/lib/cartContext";
+import { useCart } from "../lib/cartContext";
 import { useRouter } from "next/navigation";
-import { auth, db } from "../../app/lib/firebase";
+import { auth, db } from "../lib/firebase";
 import { collection, addDoc, serverTimestamp, updateDoc, doc, increment } from "firebase/firestore";
-import { clearCart } from "../../app/lib/cartService";
+import { clearCart } from "../lib/cartService";
 import Navbar from "@/components/navbar";
 import Link from "next/link";
 

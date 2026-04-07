@@ -5,10 +5,14 @@ import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "./firebase";
 
 export async function login(email: string, password: string) {
-  const cred = await signInWithEmailAndPassword(auth, email, password);
-  const snap = await getDoc(doc(db, "users", cred.user.uid));
-  const role = snap.data()?.role; // "admin" or "user"
-  return { uid: cred.user.uid, role };
+  const userCredential = await signInWithEmailAndPassword(auth, email, password);
+  const uid = userCredential.user.uid;
+
+  // fetch role from Firestore
+  const snap = await getDoc(doc(db, "users", uid));
+  const role = snap.exists() ? snap.data().role : "user"; // default user
+
+  return { uid, role };
 }
 
 export async function logout() {
