@@ -11,7 +11,7 @@ import {
 import { useCart } from "../lib/cartContext";
 import { useRouter } from "next/navigation";
 import { auth, db } from "../lib/firebase";
-import { collection, addDoc, serverTimestamp, updateDoc, doc, increment } from "firebase/firestore";
+import { collection, addDoc,getDoc, serverTimestamp, updateDoc, doc, increment } from "firebase/firestore";
 import { clearCart } from "../lib/cartService";
 import Navbar from "@/components/navbar";
 import Link from "next/link";
@@ -70,22 +70,40 @@ function CheckoutForm({ total }: { total: number }) {
 
     const user = auth.currentUser;
     if (user) {
-      await addDoc(collection(db, "orders"), {
-        userId: user.uid,
-        items: items.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })),
-        total: total.toFixed(2),
-        status: "Processing",
-        createdAt: serverTimestamp(),
-      });
-
       for (const item of items) {
-        await updateDoc(doc(db, "products", item.id), {
-          stock: increment(-item.quantity),
-        });
+      const productSnap = await getDoc(doc(db, "products", item.id));
+      if (!productSnap.exists()) {
+        setError(`Product "${item.name}" no longer exists.`);
+        setLoading(false);
+        return;
       }
-
-      await clearCart(user.uid);
+      const currentStock = productSnap.data().stock ?? 0;
+      if (currentStock < item.quantity) {
+        setError(
+          `Sorry, "${item.name}" only has ${currentStock} left in stock.`
+        );
+        setLoading(false);
+        return;
+      }
     }
+
+    // 2. All stock is fine — write the order and decrement
+    await addDoc(collection(db, "orders"), {
+      userId: user.uid,
+      items: items.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })),
+      total: total.toFixed(2),
+      status: "Processing",
+      createdAt: serverTimestamp(),
+    });
+
+    for (const item of items) {
+      await updateDoc(doc(db, "products", item.id), {
+        stock: increment(-item.quantity),
+      });
+    }
+
+    await clearCart(user.uid);
+  }
 
     clearItems();
     router.push("/orders");
