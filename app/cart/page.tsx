@@ -17,7 +17,7 @@ export default function CartPage() {
       router.push("/login");
       return;
     }
-    router.push("/checkout");
+    router.push("/payment");
   };
 
   return (

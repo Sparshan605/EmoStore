@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { login } from "../lib/authservice";
-import "../globals.css"
+import "../globals.css";
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,11 +15,8 @@ export default function LoginPage() {
     setError("");
     try {
       const { uid, role } = await login(email, password);
-
-      // redirect based on role
       if (role === "admin") window.location.replace("/admin");
-      else window.location.replace("/account");
-
+      else window.location.replace("/");
     } catch (e) {
       setError("Invalid email or password.");
       setLoading(false);
@@ -28,7 +26,12 @@ export default function LoginPage() {
   return (
     <main className="min-h-screen bg-black text-white flex items-center justify-center px-6">
       <div className="w-full max-w-sm">
-        <h1 className="text-4xl uppercase tracking-wider mb-10 text-center" style={{ fontFamily: '"Courier New", monospace' }}>
+        <p className="text-xs uppercase tracking-[0.35em] text-white/40 text-center mb-3"
+          style={{ fontFamily: "Work Sans, sans-serif" }}>
+          Emo Store
+        </p>
+        <h1 className="text-4xl uppercase tracking-wider mb-10 text-center"
+          style={{ fontFamily: '"Courier New", monospace' }}>
           Sign In
         </h1>
 

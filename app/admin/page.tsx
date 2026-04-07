@@ -1,17 +1,16 @@
 'use client';
 
 import React, { useEffect, useState } from "react";
-import { db, auth } from "../../app/lib/firebase";
+import { db } from "../../app/lib/firebase";
 import {
   collection,
   getDocs,
-  getDoc,
   addDoc,
   updateDoc,
   deleteDoc,
   doc,
 } from "firebase/firestore";
-import { User, onAuthStateChanged } from "firebase/auth";
+import { useRequireAdmin } from "../../app/protectedRoute";
 import { logout } from "../../app/lib/authservice";
 import { PRODUCT_CATEGORIES } from "../../app/lib/constants";
 import "@/app/globals.css";
@@ -71,12 +70,19 @@ function SectionHeading({ title, subtitle }: { title: string; subtitle?: string 
 }
 
 export default function AdminPage() {
+
+  const adminReady = useRequireAdmin();
+
   const [products, setProducts] = useState<Product[]>([]);
   const [form, setForm] = useState<EditForm>(emptyForm);
   const [adding, setAdding] = useState(false);
   const [addSuccess, setAddSuccess] = useState("");
-  const [loading, setLoading] = useState(true);
+  
+  
+  
 
+  // replace your loading state check with:
+  
   const [customTags, setCustomTags] = useState<string[]>(() => {
     if (typeof window === "undefined") return [];
     try {
@@ -104,29 +110,9 @@ export default function AdminPage() {
   setProducts(items);
 };
 
-  // Auth + role check
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (user: User | null) => {
-      if (!user) {
-        window.location.replace("/login");
-        return;
-      }
-
-      const userDocRef = doc(db, "users", user.uid);
-      const snap = await getDoc(userDocRef);
-      const role = snap.data()?.role ?? "user";
-
-      if (role !== "admin") {
-        window.location.replace("/login");
-        return;
-      }
-
-      setLoading(false);
-      fetchProducts();
-    });
-
-    return () => unsub();
-  }, []);
+  if (adminReady) fetchProducts();
+}, [adminReady]);
 
   // Persist custom tags
   useEffect(() => {
@@ -304,11 +290,11 @@ export default function AdminPage() {
     );
   }
 
-  if (loading) return <p className="text-white p-6">Loading...</p>;
+  if (!adminReady) return <p className="text-white p-6">Loading...</p>;
 
   return (
     <main className="min-h-screen bg-black text-white">
-      <div className="max-w-5xl mx-auto px-6 py-12 md:px-10">
+      <div className="max-w-6xl mx-auto px-6 py-12 md:px-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-16 pb-6 border-b border-white/10">
           <div>

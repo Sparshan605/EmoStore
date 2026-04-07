@@ -42,7 +42,7 @@ function CheckoutForm({ total }: { total: number }) {
       return;
     }
 
-    const res = await fetch("/api/create-payment-intent", {
+    const res = await fetch("/api/payment", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ amount: total }),
@@ -125,7 +125,7 @@ export default function CheckoutPage() {
     if (items.length === 0) { router.push("/cart"); return; }
     if (!auth.currentUser) { router.push("/login"); return; }
 
-    fetch("/api/create-payment-intent", {
+    fetch("/api/payment", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ amount: totalWithTax }),

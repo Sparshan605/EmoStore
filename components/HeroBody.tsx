@@ -13,8 +13,8 @@ const screamFont = localFont({
 });
 
 const categories = [
-  { label: "Emo", catimg: "https://i.pinimg.com/736x/54/61/75/5461756d8147358e364835bd2003349f.jpg" },
-  { label: "Goth", catimg: "https://i.pinimg.com/736x/52/5a/27/525a270e5424a0524a563fd566555c11.jpg" },
+  { label: "Emo", catimg: "https://i.pinimg.com/736x/54/61/75/5461756d8147358e364835bd2003349f.jpg" ,href:'/emo' },
+  { label: "Goth", catimg: "https://i.pinimg.com/736x/52/5a/27/525a270e5424a0524a563fd566555c11.jpg" ,href:'/goth' },
 ];
 
 type Product = {
@@ -178,7 +178,7 @@ export function HeroBody() {
           {categories.map((cat) => (
             <Link
               key={cat.label}
-              href={`/shop?category=${cat.label.toLowerCase()}`}
+              href={cat.href}
               className="group relative overflow-hidden rounded-2xl border border-white/10 transition duration-300 hover:-translate-y-1 hover:border-white/20"
             >
               <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${cat.catimg})` }} />

@@ -1,7 +1,5 @@
 
 import localFont from "next/font/local";
-import "../app/globals.css";
-
 
 const screamFont = localFont({
   src: "../public/fonts/EyesWideSuicide-vVzM.ttf",

@@ -3,12 +3,11 @@
 import localFont from "next/font/local";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
-import { db } from "../../app/lib/firebase";
+import { db } from "@/app/lib/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { useCart } from "../../app/lib/cartContext";
+import { useCart } from "@/app/lib/cartContext";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
-import "../globals.css";
 
 const screamFont = localFont({
   src: "../../public/fonts/EyesWideSuicide-vVzM.ttf",
@@ -61,7 +60,7 @@ function ProductCard({ product, rank }: { product: Product; rank?: number }) {
 
       <div className="relative mb-6 h-52 rounded-xl border border-white/10 overflow-hidden">
         {product.imageUrl
-          ? <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-500" />
+          ? <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition duration-500" />
           : <div className="w-full h-full bg-gradient-to-b from-zinc-800 to-zinc-950" />}
         {outOfStock && (
           <div className="absolute inset-0 bg-black/70 flex items-center justify-center backdrop-blur-sm">
@@ -107,7 +106,7 @@ function HorizontalScroll({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function GothPage() {
+export default function EmoPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [customTags, setCustomTags] = useState<string[]>([]);
@@ -121,7 +120,7 @@ export default function GothPage() {
     const fetchProducts = async () => {
       try {
         const snap = await getDocs(
-          query(collection(db, "products"), where("style", "==", "Goth"))
+          query(collection(db, "products"), where("style", "==", "Emo"))
         );
         setProducts(snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Product[]);
       } catch (e) {
@@ -134,14 +133,13 @@ export default function GothPage() {
   }, []);
 
   const allTags = ["New", "Popular", ...customTags];
-
   const byTag = (tag: string) => products.filter((p) => p.tag === tag);
   const untagged = products.filter((p) => !p.tag || p.tag === "");
   const sectionsWithProducts = allTags.filter((t) => byTag(t).length > 0);
 
   const tagMeta: Record<string, { eyebrow: string; heading: string }> = {
-    New:     { eyebrow: "Just Dropped",    heading: "New Arrivals"  },
-    Popular: { eyebrow: "Fan Favourites",  heading: "Most Popular"  },
+    New:     { eyebrow: "Just Dropped",   heading: "New Arrivals" },
+    Popular: { eyebrow: "Fan Favourites", heading: "Most Popular" },
   };
 
   return (
@@ -150,17 +148,17 @@ export default function GothPage() {
 
       {/* Hero */}
       <div className="relative h-[70vh] flex items-end overflow-hidden">
-        <div className="absolute inset-0 bg-cover bg-[center_30%] bg-[url('https://i.pinimg.com/736x/52/5a/27/525a270e5424a0524a563fd566555c11.jpg')]" />
+        <div className="absolute inset-0 bg-cover bg-top bg-[url('https://i.pinimg.com/736x/54/61/75/5461756d8147358e364835bd2003349f.jpg')]" />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/10" />
         <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-10 lg:px-12 pb-16 w-full">
           <p className="text-sm uppercase tracking-[0.35em] text-white/50 mb-3" style={{ fontFamily: "Work Sans, sans-serif" }}>
-            The Dark Collection
+            The Emo Collection
           </p>
           <h1 className="font-[ScreamFont] text-[18vw] md:text-[12vw] uppercase leading-none bg-gradient-to-b from-white to-gray-500 bg-clip-text text-transparent">
-            Goth
+            Emo
           </h1>
           <p className="mt-4 max-w-lg text-base text-white/60 leading-7" style={{ fontFamily: "Work Sans, sans-serif" }}>
-            Darkness as an aesthetic. Shadow as a statement. Cemetery couture, black on black, eternally yours.
+            Feelings worn on your sleeve. Raw emotion, honest aesthetic. This is the sound of your wardrobe.
           </p>
         </div>
       </div>
@@ -181,7 +179,7 @@ export default function GothPage() {
         </section>
       )}
 
-      {/* Tagged sections - New, Popular, and any custom tags */}
+      {/* Tagged sections */}
       {!loading && sectionsWithProducts.map((tag) => {
         const items = byTag(tag);
         const meta = tagMeta[tag] ?? { eyebrow: tag, heading: tag };
@@ -204,13 +202,13 @@ export default function GothPage() {
         );
       })}
 
-      {/* Untagged / general goth products */}
+      {/* Untagged products */}
       {!loading && untagged.length > 0 && (
         <section className="py-20">
           <div className="mx-auto max-w-7xl px-6 md:px-10 lg:px-12 mb-10">
             <div className="border-b border-white/15 pb-6">
               <p className="mb-2 text-sm uppercase tracking-[0.35em] text-white/50" style={{ fontFamily: "Work Sans, sans-serif" }}>The Collection</p>
-              <h2 className="text-4xl uppercase tracking-wider md:text-6xl" style={{ fontFamily: '"Courier New", monospace' }}>All Goth</h2>
+              <h2 className="text-4xl uppercase tracking-wider md:text-6xl" style={{ fontFamily: '"Courier New", monospace' }}>All Emo</h2>
             </div>
           </div>
           <div className="px-6 md:px-10 lg:px-12">
@@ -224,12 +222,12 @@ export default function GothPage() {
       {/* Empty state */}
       {!loading && products.length === 0 && (
         <section className="mx-auto max-w-7xl px-6 py-32 text-center">
-          <p className="text-4xl text-white/20 mb-4" style={{ fontFamily: '"Courier New", monospace' }}>No goth products yet.</p>
+          <p className="text-4xl text-white/20 mb-4" style={{ fontFamily: '"Courier New", monospace' }}>No emo products yet.</p>
           <p className="text-sm text-white/30 mb-8" style={{ fontFamily: "Work Sans, sans-serif" }}>
-            Set a product's style to "Goth" in the admin panel to have it appear here.
+            Set a product's style to "Emo" in the admin panel to have it appear here.
           </p>
-          <Link href="/shop" className="rounded-full border border-white/25 px-6 py-3 text-sm hover:bg-white hover:text-black transition" style={{ fontFamily: "Work Sans, sans-serif" }}>
-            Browse All Products
+          <Link href="/goth" className="rounded-full border border-white/25 px-6 py-3 text-sm hover:bg-white hover:text-black transition" style={{ fontFamily: "Work Sans, sans-serif" }}>
+            Browse Goth Instead
           </Link>
         </section>
       )}
@@ -238,13 +236,13 @@ export default function GothPage() {
       {!loading && products.length > 0 && (
         <section className="mx-auto max-w-7xl px-6 py-20 md:px-10 lg:px-12">
           <div className="rounded-2xl border border-white/10 bg-zinc-900 p-12 text-center md:p-20">
-            <p className="mb-3 text-sm uppercase tracking-[0.35em] text-white/50" style={{ fontFamily: "Work Sans, sans-serif" }}>Not Just Goth</p>
+            <p className="mb-3 text-sm uppercase tracking-[0.35em] text-white/50" style={{ fontFamily: "Work Sans, sans-serif" }}>Not Just Emo</p>
             <h2 className="text-4xl uppercase tracking-wider md:text-6xl" style={{ fontFamily: '"Courier New", monospace' }}>Full Shop</h2>
             <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-white/60" style={{ fontFamily: "Work Sans, sans-serif" }}>
               The full collection awaits — emo, goth, punk, and everything in between.
             </p>
-            <Link href="/shop" className="mt-8 inline-block rounded-full bg-white px-8 py-3 text-sm font-medium text-black transition hover:bg-white/80" style={{ fontFamily: "Work Sans, sans-serif" }}>
-              View Full Shop
+            <Link href="/goth" className="mt-8 inline-block rounded-full bg-white px-8 py-3 text-sm font-medium text-black transition hover:bg-white/80" style={{ fontFamily: "Work Sans, sans-serif" }}>
+              Browse Goth
             </Link>
           </div>
         </section>
