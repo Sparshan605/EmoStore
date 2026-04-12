@@ -236,8 +236,7 @@ export default function OrdersPage() {
               className="mt-5 max-w-2xl text-base leading-7 text-white/80 md:text-lg"
               style={{ fontFamily: "Work Sans, sans-serif" }}
             >
-              Your personal order history, pulled from Firestore and shown only for
-              the logged-in user.
+              Your order history of the latest most fashionable emo gothic style clothing.
             </p>
           </div>
 
@@ -359,7 +358,7 @@ export default function OrdersPage() {
                           className="text-2xl uppercase tracking-wide"
                           style={{ fontFamily: '"Courier New", monospace' }}
                         >
-                          {getOrderNumber(order)}
+                          Order ID: {getOrderNumber(order)}
                         </h2>
 
                         <p
