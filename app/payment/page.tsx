@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
@@ -11,13 +11,22 @@ import {
 import { useCart } from "../lib/cartContext";
 import { useRouter } from "next/navigation";
 import { auth, db } from "../lib/firebase";
-import { collection, addDoc,getDoc, serverTimestamp, updateDoc, doc, increment } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  getDoc,
+  serverTimestamp,
+  updateDoc,
+  doc,
+  increment,
+} from "firebase/firestore";
 import { clearCart } from "../lib/cartService";
 import Navbar from "@/components/navbar";
 import Link from "next/link";
 
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+);
 
 // ── inner form — must be INSIDE <Elements> so useStripe/useElements work
 function CheckoutForm({ total }: { total: number }) {
@@ -71,39 +80,43 @@ function CheckoutForm({ total }: { total: number }) {
     const user = auth.currentUser;
     if (user) {
       for (const item of items) {
-      const productSnap = await getDoc(doc(db, "products", item.id));
-      if (!productSnap.exists()) {
-        setError(`Product "${item.name}" no longer exists.`);
-        setLoading(false);
-        return;
+        const productSnap = await getDoc(doc(db, "products", item.id));
+        if (!productSnap.exists()) {
+          setError(`Product "${item.name}" no longer exists.`);
+          setLoading(false);
+          return;
+        }
+        const currentStock = productSnap.data().stock ?? 0;
+        if (currentStock < item.quantity) {
+          setError(
+            `Sorry, "${item.name}" only has ${currentStock} left in stock.`
+          );
+          setLoading(false);
+          return;
+        }
       }
-      const currentStock = productSnap.data().stock ?? 0;
-      if (currentStock < item.quantity) {
-        setError(
-          `Sorry, "${item.name}" only has ${currentStock} left in stock.`
-        );
-        setLoading(false);
-        return;
-      }
-    }
 
-    // 2. All stock is fine — write the order and decrement
-    await addDoc(collection(db, "orders"), {
-      userId: user.uid,
-      items: items.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })),
-      total: total.toFixed(2),
-      status: "Processing",
-      createdAt: serverTimestamp(),
-    });
-
-    for (const item of items) {
-      await updateDoc(doc(db, "products", item.id), {
-        stock: increment(-item.quantity),
+      // 2. All stock is fine — write the order and decrement
+      await addDoc(collection(db, "orders"), {
+        userId: user.uid,
+        items: items.map((i) => ({
+          name: i.name,
+          quantity: i.quantity,
+          price: i.price,
+        })),
+        total: total.toFixed(2),
+        status: "Processing",
+        createdAt: serverTimestamp(),
       });
-    }
 
-    await clearCart(user.uid);
-  }
+      for (const item of items) {
+        await updateDoc(doc(db, "products", item.id), {
+          stock: increment(-item.quantity),
+        });
+      }
+
+      await clearCart(user.uid);
+    }
 
     clearItems();
     router.push("/orders");
@@ -114,7 +127,10 @@ function CheckoutForm({ total }: { total: number }) {
       <PaymentElement options={{ layout: "tabs" }} />
 
       {error && (
-        <p className="text-sm text-red-400" style={{ fontFamily: "Work Sans, sans-serif" }}>
+        <p
+          className="text-sm text-red-400"
+          style={{ fontFamily: "Work Sans, sans-serif" }}
+        >
           {error}
         </p>
       )}
@@ -140,8 +156,14 @@ export default function CheckoutPage() {
   const totalWithTax = parseFloat((total * 1.05).toFixed(2));
 
   useEffect(() => {
-    if (items.length === 0) { router.push("/cart"); return; }
-    if (!auth.currentUser) { router.push("/login"); return; }
+    if (items.length === 0) {
+      router.push("/cart");
+      return;
+    }
+    if (!auth.currentUser) {
+      router.push("/login");
+      return;
+    }
 
     fetch("/api/payment", {
       method: "POST",
@@ -176,41 +198,72 @@ export default function CheckoutPage() {
       <Navbar />
       <main className="min-h-screen bg-black text-white mt-10">
         <section className="mx-auto max-w-4xl px-6 py-12 md:px-10">
-
           <div className="mb-12 border-b border-white/20 pb-8">
-            <p className="mb-3 text-sm uppercase tracking-[0.35em] text-white/60" style={{ fontFamily: "Work Sans, sans-serif" }}>
+            <p
+              className="mb-3 text-sm uppercase tracking-[0.35em] text-white/60"
+              style={{ fontFamily: "Work Sans, sans-serif" }}
+            >
               Emo Store
             </p>
-            <h1 className="text-5xl uppercase tracking-wider md:text-7xl" style={{ fontFamily: '"Courier New", monospace' }}>
+            <h1
+              className="text-5xl uppercase tracking-wider md:text-7xl"
+              style={{ fontFamily: '"Courier New", monospace' }}
+            >
               Checkout
             </h1>
           </div>
 
           <div className="flex flex-col gap-10 lg:flex-row">
-
             {/* Order Summary */}
             <div className="w-full lg:w-80 flex-shrink-0">
               <div className="rounded-2xl border border-white/10 bg-zinc-800 p-6">
-                <h2 className="text-lg uppercase tracking-wider mb-6" style={{ fontFamily: '"Courier New", monospace' }}>
+                <h2
+                  className="text-lg uppercase tracking-wider mb-6"
+                  style={{ fontFamily: '"Courier New", monospace' }}
+                >
                   Order Summary
                 </h2>
                 <div className="space-y-4 mb-6">
                   {items.map((item) => (
                     <div key={item.id} className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-lg overflow-hidden border border-white/10 flex-shrink-0">
-                        {item.imageUrl
-                          ? <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                          : <div className="w-full h-full bg-zinc-700" />}
+                        {item.imageUrl ? (
+                          <img
+                            src={item.imageUrl}
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-zinc-700" />
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm uppercase truncate" style={{ fontFamily: '"Courier New", monospace' }}>{item.name}</p>
-                        <p className="text-xs text-white/40" style={{ fontFamily: "Work Sans, sans-serif" }}>×{item.quantity}</p>
+                        <p
+                          className="text-sm uppercase truncate"
+                          style={{ fontFamily: '"Courier New", monospace' }}
+                        >
+                          {item.name}
+                        </p>
+                        <p
+                          className="text-xs text-white/40"
+                          style={{ fontFamily: "Work Sans, sans-serif" }}
+                        >
+                          ×{item.quantity}
+                        </p>
                       </div>
-                      <span className="text-sm flex-shrink-0" style={{ fontFamily: '"Courier New", monospace' }}>{item.price}</span>
+                      <span
+                        className="text-sm flex-shrink-0"
+                        style={{ fontFamily: '"Courier New", monospace' }}
+                      >
+                        {item.price}
+                      </span>
                     </div>
                   ))}
                 </div>
-                <div className="border-t border-white/10 pt-4 space-y-2 text-sm" style={{ fontFamily: "Work Sans, sans-serif" }}>
+                <div
+                  className="border-t border-white/10 pt-4 space-y-2 text-sm"
+                  style={{ fontFamily: "Work Sans, sans-serif" }}
+                >
                   <div className="flex justify-between text-white/60">
                     <span>Subtotal ({count} items)</span>
                     <span>${total.toFixed(2)}</span>
@@ -237,7 +290,10 @@ export default function CheckoutPage() {
             {/* Payment Form */}
             <div className="flex-1">
               <div className="rounded-2xl border border-white/10 bg-zinc-800 p-6">
-                <h2 className="text-lg uppercase tracking-wider mb-6" style={{ fontFamily: '"Courier New", monospace' }}>
+                <h2
+                  className="text-lg uppercase tracking-wider mb-6"
+                  style={{ fontFamily: '"Courier New", monospace' }}
+                >
                   Payment
                 </h2>
 
@@ -253,17 +309,22 @@ export default function CheckoutPage() {
                     <CheckoutForm total={totalWithTax} />
                   </Elements>
                 ) : (
-                  <p className="text-sm text-red-400" style={{ fontFamily: "Work Sans, sans-serif" }}>
+                  <p
+                    className="text-sm text-red-400"
+                    style={{ fontFamily: "Work Sans, sans-serif" }}
+                  >
                     Failed to load payment. Please try again.
                   </p>
                 )}
 
-                <p className="mt-6 text-xs text-white/20 text-center" style={{ fontFamily: "Work Sans, sans-serif" }}>
+                <p
+                  className="mt-6 text-xs text-white/20 text-center"
+                  style={{ fontFamily: "Work Sans, sans-serif" }}
+                >
                   Secured by Stripe · Test card: 4242 4242 4242 4242
                 </p>
               </div>
             </div>
-
           </div>
         </section>
       </main>
