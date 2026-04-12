@@ -24,15 +24,35 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Contact */}
-          <div>
-            <h3 className="text-lg font-bold mb-4">Contact</h3>
-            <ul className="space-y-2 text-sm text-gray-400">
-              <li>Email: hello@emostore.com</li>
-              <li>Phone: (555) 123-4567</li>
-              <li>Follow us on social media</li>
-            </ul>
-          </div>
+         {/* Contact */}
+            <div>
+              <h3 className="text-lg font-bold mb-4">Contact</h3>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li>
+                  Email:{" "}
+                  <a
+                    href="mailto:hello@emostore.com"
+                    className= "hover:text-white transition">
+                    hello@emostore.com
+                  </a>
+                </li>
+                <li>
+                  Phone:{" "}
+                  <a
+                    href="tel:5551234567"
+                    className= "hover:text-white transition">
+                    (555) 123-4567
+                  </a>
+                </li>
+                <li><a href="https://www.instagram.com/emostore"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className= "hover:text-white transition">
+                    Follow us on Instagram
+                  </a>
+                </li>
+              </ul>
+            </div>
         </div>
 
         {/* Bottom */}
