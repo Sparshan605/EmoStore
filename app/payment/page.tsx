@@ -1,351 +1,392 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { auth, db } from "../lib/firebase";
-import Navbar from "@/components/navbar";
-import Footer from "@/components/footer";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  Elements,
+  PaymentElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
+import { useCart } from "../lib/cartContext";
 import { useRouter } from "next/navigation";
+import { auth, db } from "../lib/firebase";
+import {
+  collection,
+  addDoc,
+  getDoc,
+  serverTimestamp,
+  updateDoc,
+  doc,
+  increment,
+} from "firebase/firestore";
+import { clearCart } from "../lib/cartService";
+import Navbar from "@/components/navbar";
+import Link from "next/link";
 
-// Profile data structure
-type ProfileData = {
-  firstName: string;
-  lastName: string;
-  phone: string;
-  email: string;
-};
+// this loads stripe using publishable key
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+);
 
-export default function ProfilePage() {
+// this is the checkout form inside Elements
+function CheckoutForm({ total }: { total: number }) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const { items, clearItems } = useCart();
   const router = useRouter();
 
-  // State variables
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState<"success" | "error" | "">("");
+  // loading state for button
+  const [loading, setLoading] = useState(false);
 
-  // Form data
-  const [form, setForm] = useState<ProfileData>({
-    firstName: "",
-    lastName: "",
-    phone: "",
-    email: "",
-  });
+  // error message state
+  const [error, setError] = useState("");
 
-  // Check if user is logged in and load profile data
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (!currentUser) {
-        setUser(null);
-        setLoading(false);
-        return;
-      }
+  // this runs when user clicks pay button
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-      setUser(currentUser);
+    // if stripe is not ready, stop here
+    if (!stripe || !elements) return;
 
-      try {
-        // Get user data from Firestore
-        const userRef = doc(db, "users", currentUser.uid);
-        const snap = await getDoc(userRef);
+    setLoading(true);
+    setError("");
 
-        if (snap.exists()) {
-          const data = snap.data();
+    // submit stripe elements first
+    const { error: submitError } = await elements.submit();
 
-          // Fill form with existing data
-          setForm({
-            firstName: data.firstName || "",
-            lastName: data.lastName || "",
-            phone: data.phone || "",
-            email: data.email || currentUser.email || "",
-          });
-        } else {
-          // No profile data yet
-          setForm({
-            firstName: "",
-            lastName: "",
-            phone: "",
-            email: currentUser.email || "",
-          });
-        }
-      } catch (error) {
-        console.error("Failed to load profile:", error);
-        setMessage("Failed to load profile data.");
-        setMessageType("error");
-      } finally {
-        setLoading(false);
-      }
+    if (submitError) {
+      setError(submitError.message ?? "Something went wrong.");
+      setLoading(false);
+      return;
+    }
+
+    // create payment intent from api
+    const res = await fetch("/api/payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount: total }),
     });
 
-    return () => unsubscribe();
-  }, []);
+    const { clientSecret, error: apiError } = await res.json();
 
-  // Handle input changes
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-
-    // Clear error message when user types
-    if (message) {
-      setMessage("");
-      setMessageType("");
-    }
-  };
-
-  // Save profile changes
-  const handleSave = async () => {
-    if (!user) return;
-
-    const firstName = form.firstName.trim();
-    const lastName = form.lastName.trim();
-    const phone = form.phone.trim();
-    const email = form.email.trim();
-
-    setMessage("");
-    setMessageType("");
-
-    // Validation checks
-    if (!firstName || !lastName) {
-      setMessage("First name and last name are required.");
-      setMessageType("error");
+    if (apiError) {
+      setError(apiError);
+      setLoading(false);
       return;
     }
 
-    if (firstName.length < 2) {
-      setMessage("First name must be at least 2 characters.");
-      setMessageType("error");
+    // confirm payment with stripe
+    const { error: confirmError } = await stripe.confirmPayment({
+      elements,
+      clientSecret,
+      confirmParams: {
+        return_url: `${window.location.origin}/orders`,
+      },
+      redirect: "if_required",
+    });
+
+    if (confirmError) {
+      setError(confirmError.message ?? "Payment failed.");
+      setLoading(false);
       return;
     }
 
-    if (lastName.length < 2) {
-      setMessage("Last name must be at least 2 characters.");
-      setMessageType("error");
-      return;
-    }
+    // get current logged in user
+    const user = auth.currentUser;
 
-    if (!/^[A-Za-z\s'-]+$/.test(firstName)) {
-      setMessage("First name contains invalid characters.");
-      setMessageType("error");
-      return;
-    }
+    if (user) {
+      // check stock before saving order
+      for (const item of items) {
+        const productSnap = await getDoc(doc(db, "products", item.id));
 
-    if (!/^[A-Za-z\s'-]+$/.test(lastName)) {
-      setMessage("Last name contains invalid characters.");
-      setMessageType("error");
-      return;
-    }
+        if (!productSnap.exists()) {
+          setError(`Product "${item.name}" no longer exists.`);
+          setLoading(false);
+          return;
+        }
 
-    if (!phone) {
-      setMessage("Phone number is required.");
-      setMessageType("error");
-      return;
-    }
+        const currentStock = productSnap.data().stock ?? 0;
 
-    if (!/^\+?[0-9\s\-()]{10,20}$/.test(phone)) {
-      setMessage("Please enter a valid phone number.");
-      setMessageType("error");
-      return;
-    }
+        if (currentStock < item.quantity) {
+          setError(
+            `Sorry, "${item.name}" only has ${currentStock} left in stock.`
+          );
+          setLoading(false);
+          return;
+        }
+      }
 
-    if (!email) {
-      setMessage("Email address is required.");
-      setMessageType("error");
-      return;
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setMessage("Please enter a valid email address.");
-      setMessageType("error");
-      return;
-    }
-
-    setSaving(true);
-
-    try {
-      // Save to Firestore
-      await setDoc(
-        doc(db, "users", user.uid),
-        {
-          firstName,
-          lastName,
-          phone,
-          email,
-          updatedAt: new Date(),
-        },
-        { merge: true }
-      );
-
-      // Update form state
-      setForm({
-        firstName,
-        lastName,
-        phone,
-        email,
+      // save order to firestore
+      await addDoc(collection(db, "orders"), {
+        userId: user.uid,
+        items: items.map((i) => ({
+          name: i.name,
+          quantity: i.quantity,
+          price: i.price,
+        })),
+        total: total.toFixed(2),
+        status: "Processing",
+        createdAt: serverTimestamp(),
       });
 
-      setMessage("Profile updated successfully.");
-      setMessageType("success");
-    } catch (error) {
-      console.error("Failed to save profile:", error);
-      setMessage("Something went wrong while saving.");
-      setMessageType("error");
-    } finally {
-      setSaving(false);
+      // update stock after order is saved
+      for (const item of items) {
+        await updateDoc(doc(db, "products", item.id), {
+          stock: increment(-item.quantity),
+        });
+      }
+
+      // clear cart from database
+      await clearCart(user.uid);
     }
+
+    // clear cart from local state
+    clearItems();
+
+    // go to orders page after payment
+    router.push("/orders");
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* stripe payment input */}
+      <PaymentElement options={{ layout: "tabs" }} />
+
+      {/* show error if there is one */}
+      {error && (
+        <p
+          className="text-sm text-red-400"
+          style={{ fontFamily: "Work Sans, sans-serif" }}
+        >
+          {error}
+        </p>
+      )}
+
+      {/* payment button */}
+      <button
+        type="submit"
+        disabled={!stripe || loading}
+        className="w-full rounded-full bg-white text-black py-3 text-sm font-medium hover:bg-white/80 transition disabled:opacity-50"
+        style={{ fontFamily: "Work Sans, sans-serif" }}
+      >
+        {loading ? "Processing..." : `Pay $${total.toFixed(2)}`}
+      </button>
+    </form>
+  );
+}
+
+// main checkout page
+export default function CheckoutPage() {
+  const { items, total, count } = useCart();
+  const router = useRouter();
+
+  // stripe client secret
+  const [clientSecret, setClientSecret] = useState("");
+
+  // loading for payment intent
+  const [loadingIntent, setLoadingIntent] = useState(true);
+
+  // add 5% tax to total
+  const totalWithTax = parseFloat((total * 1.05).toFixed(2));
+
+  useEffect(() => {
+    // if cart is empty, go back to cart
+    if (items.length === 0) {
+      router.push("/cart");
+      return;
+    }
+
+    // if user is not logged in, go to login
+    if (!auth.currentUser) {
+      router.push("/login");
+      return;
+    }
+
+    // create payment intent when page loads
+    fetch("/api/payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount: totalWithTax }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        setClientSecret(data.clientSecret);
+        setLoadingIntent(false);
+      })
+      .catch(() => setLoadingIntent(false));
+  }, []);
+
+  // stripe appearance options
+  const stripeOptions = {
+    clientSecret,
+    appearance: {
+      theme: "night" as const,
+      variables: {
+        colorPrimary: "#a855f7",
+        colorBackground: "#18181b",
+        colorText: "#ffffff",
+        colorDanger: "#f87171",
+        fontFamily: "Work Sans, sans-serif",
+        borderRadius: "12px",
+      },
+    },
   };
 
   return (
     <>
       <Navbar />
 
-      <main className="min-h-screen bg-black text-white pt-28 px-6 pb-16">
-        <div className="max-w-3xl mx-auto">
-          {/* Page header */}
-          <div className="mb-10">
-            <p className="text-sm uppercase tracking-[0.3em] text-white/40 mb-3">
-              Account
+      <main className="min-h-screen bg-black text-white mt-10">
+        <section className="mx-auto max-w-4xl px-6 py-12 md:px-10">
+          {/* page title */}
+          <div className="mb-12 border-b border-white/20 pb-8">
+            <p
+              className="mb-3 text-sm uppercase tracking-[0.35em] text-white/60"
+              style={{ fontFamily: "Work Sans, sans-serif" }}
+            >
+              Emo Store
             </p>
-            <h1 className="text-4xl md:text-5xl font-semibold mb-3">
-              Profile Settings
+
+            <h1
+              className="text-5xl uppercase tracking-wider md:text-7xl"
+              style={{ fontFamily: '"Courier New", monospace' }}
+            >
+              Checkout
             </h1>
-            <p className="text-white/60 max-w-xl">
-              Update your personal information and keep your account details up
-              to date.
-            </p>
           </div>
 
-          {/* Loading state */}
-          {loading ? (
-            <div className="rounded-3xl border border-white/10 bg-zinc-900 p-8">
-              <p className="text-white/70">Loading profile...</p>
-            </div>
-          ) : !user ? (
-            // Not logged in
-            <div className="rounded-3xl border border-white/10 bg-zinc-900 p-8">
-              <p className="text-white/80 mb-4">
-                You need to sign in to view your profile settings.
-              </p>
-              <button
-                onClick={() => router.push("/login")}
-                className="rounded-xl bg-white text-black px-5 py-3 font-medium hover:bg-white/90 transition"
-              >
-                Go to Login
-              </button>
-            </div>
-          ) : (
-            // Profile form
-            <div className="rounded-3xl border border-white/10 bg-zinc-900 p-8 md:p-10 shadow-2xl">
-              {/* User avatar and info */}
-              <div className="flex flex-col md:flex-row md:items-center gap-6 mb-10">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-900 border border-white/10 flex items-center justify-center text-2xl font-semibold">
-                  {form.firstName
-                    ? form.firstName.charAt(0).toUpperCase()
-                    : "U"}
+          <div className="flex flex-col gap-10 lg:flex-row">
+            {/* left side order summary */}
+            <div className="w-full lg:w-80 flex-shrink-0">
+              <div className="rounded-2xl border border-white/10 bg-zinc-800 p-6">
+                <h2
+                  className="text-lg uppercase tracking-wider mb-6"
+                  style={{ fontFamily: '"Courier New", monospace' }}
+                >
+                  Order Summary
+                </h2>
+
+                <div className="space-y-4 mb-6">
+                  {items.map((item) => (
+                    <div key={item.id} className="flex items-center gap-3">
+                      {/* product image */}
+                      <div className="w-12 h-12 rounded-lg overflow-hidden border border-white/10 flex-shrink-0">
+                        {item.imageUrl ? (
+                          <img
+                            src={item.imageUrl}
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-zinc-700" />
+                        )}
+                      </div>
+
+                      {/* product info */}
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className="text-sm uppercase truncate"
+                          style={{ fontFamily: '"Courier New", monospace' }}
+                        >
+                          {item.name}
+                        </p>
+
+                        <p
+                          className="text-xs text-white/40"
+                          style={{ fontFamily: "Work Sans, sans-serif" }}
+                        >
+                          ×{item.quantity}
+                        </p>
+                      </div>
+
+                      {/* product price */}
+                      <span
+                        className="text-sm flex-shrink-0"
+                        style={{ fontFamily: '"Courier New", monospace' }}
+                      >
+                        {item.price}
+                      </span>
+                    </div>
+                  ))}
                 </div>
 
-                <div>
-                  <h2 className="text-2xl font-semibold">
-                    {form.firstName || form.lastName
-                      ? `${form.firstName} ${form.lastName}`.trim()
-                      : "Your Profile"}
-                  </h2>
-                  <p className="text-white/50 mt-1">
-                    Manage your personal details below.
-                  </p>
-                </div>
-              </div>
-
-              {/* Input fields */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm text-white/70 mb-2">
-                    First Name
-                  </label>
-                  <input
-                    type="text"
-                    name="firstName"
-                    value={form.firstName}
-                    onChange={handleChange}
-                    placeholder="Enter your first name"
-                    className="w-full rounded-xl bg-black border border-white/10 px-4 py-3 text-white outline-none focus:border-purple-500 transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-white/70 mb-2">
-                    Last Name
-                  </label>
-                  <input
-                    type="text"
-                    name="lastName"
-                    value={form.lastName}
-                    onChange={handleChange}
-                    placeholder="Enter your last name"
-                    className="w-full rounded-xl bg-black border border-white/10 px-4 py-3 text-white outline-none focus:border-purple-500 transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-white/70 mb-2">
-                    Phone Number
-                  </label>
-                  <input
-                    type="text"
-                    name="phone"
-                    value={form.phone}
-                    onChange={handleChange}
-                    placeholder="Enter your phone number"
-                    className="w-full rounded-xl bg-black border border-white/10 px-4 py-3 text-white outline-none focus:border-purple-500 transition"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-white/70 mb-2">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={form.email}
-                    onChange={handleChange}
-                    placeholder="Enter your email address"
-                    className="w-full rounded-xl bg-black border border-white/10 px-4 py-3 text-white outline-none focus:border-purple-500 transition"
-                  />
-                </div>
-              </div>
-
-              {/* Success/Error message */}
-              {message && (
+                {/* price details */}
                 <div
-                  className={`mt-6 rounded-xl px-4 py-3 text-sm border ${
-                    messageType === "success"
-                      ? "bg-green-500/10 text-green-300 border-green-500/20"
-                      : "bg-red-500/10 text-red-300 border-red-500/20"
-                  }`}
+                  className="border-t border-white/10 pt-4 space-y-2 text-sm"
+                  style={{ fontFamily: "Work Sans, sans-serif" }}
                 >
-                  {message}
-                </div>
-              )}
+                  <div className="flex justify-between text-white/60">
+                    <span>Subtotal ({count} items)</span>
+                    <span>${total.toFixed(2)}</span>
+                  </div>
 
-              {/* Save button */}
-              <div className="mt-8 flex justify-end">
-                <button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="rounded-xl bg-white text-black px-6 py-3 font-medium hover:bg-white/90 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                  <div className="flex justify-between text-white/60">
+                    <span>Tax (5%)</span>
+                    <span>${(total * 0.05).toFixed(2)}</span>
+                  </div>
+
+                  <div className="flex justify-between text-white font-medium pt-2 border-t border-white/10">
+                    <span>Total</span>
+                    <span>${totalWithTax.toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* back button */}
+              <Link
+                href="/cart"
+                className="mt-4 block text-center text-xs text-white/30 hover:text-white transition"
+                style={{ fontFamily: "Work Sans, sans-serif" }}
+              >
+                ← Back to Cart
+              </Link>
+            </div>
+
+            {/* right side payment form */}
+            <div className="flex-1">
+              <div className="rounded-2xl border border-white/10 bg-zinc-800 p-6">
+                <h2
+                  className="text-lg uppercase tracking-wider mb-6"
+                  style={{ fontFamily: '"Courier New", monospace' }}
                 >
-                  {saving ? "Saving..." : "Save Changes"}
-                </button>
+                  Payment
+                </h2>
+
+                {loadingIntent ? (
+                  // loading skeleton
+                  <div className="space-y-4 animate-pulse">
+                    <div className="h-12 rounded-xl bg-zinc-700" />
+                    <div className="h-12 rounded-xl bg-zinc-700" />
+                    <div className="h-12 rounded-xl bg-zinc-700" />
+                  </div>
+                ) : clientSecret ? (
+                  // stripe form
+                  <Elements stripe={stripePromise} options={stripeOptions}>
+                    <CheckoutForm total={totalWithTax} />
+                  </Elements>
+                ) : (
+                  // error if payment does not load
+                  <p
+                    className="text-sm text-red-400"
+                    style={{ fontFamily: "Work Sans, sans-serif" }}
+                  >
+                    Failed to load payment. Please try again.
+                  </p>
+                )}
+
+                {/* stripe test info */}
+                <p
+                  className="mt-6 text-xs text-white/20 text-center"
+                  style={{ fontFamily: "Work Sans, sans-serif" }}
+                >
+                  Secured by Stripe · Test card: 4242 4242 4242 4242
+                </p>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        </section>
       </main>
-
-      <Footer />
     </>
   );
 }

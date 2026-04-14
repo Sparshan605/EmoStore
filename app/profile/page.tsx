@@ -8,6 +8,7 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { useRouter } from "next/navigation";
 
+// profile data type
 type ProfileData = {
   firstName: string;
   lastName: string;
@@ -15,14 +16,21 @@ type ProfileData = {
   email: string;
 };
 
+// need to add validation on profile page
 export default function ProfilePage() {
   const router = useRouter();
 
+  // user and loading states
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  // saving state for button
   const [saving, setSaving] = useState(false);
+
+  // message shown to user
   const [message, setMessage] = useState("");
 
+  // form values
   const [form, setForm] = useState<ProfileData>({
     firstName: "",
     lastName: "",
@@ -30,6 +38,7 @@ export default function ProfilePage() {
     email: "",
   });
 
+  // get current user and load data from firestore
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (!currentUser) {
@@ -47,6 +56,7 @@ export default function ProfilePage() {
         if (snap.exists()) {
           const data = snap.data();
 
+          // fill form with saved data
           setForm({
             firstName: data.firstName || "",
             lastName: data.lastName || "",
@@ -54,6 +64,7 @@ export default function ProfilePage() {
             email: currentUser.email || "",
           });
         } else {
+          // no data yet
           setForm({
             firstName: "",
             lastName: "",
@@ -71,6 +82,7 @@ export default function ProfilePage() {
     return () => unsubscribe();
   }, []);
 
+  // update form when typing
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({
       ...prev,
@@ -78,6 +90,7 @@ export default function ProfilePage() {
     }));
   };
 
+  // save profile data to firestore
   const handleSave = async () => {
     if (!user) return;
 
@@ -94,7 +107,7 @@ export default function ProfilePage() {
           email: form.email,
           updatedAt: new Date(),
         },
-        { merge: true }
+        { merge: true } // keep old data
       );
 
       setMessage("Profile updated successfully.");
@@ -112,7 +125,9 @@ export default function ProfilePage() {
 
       <main className="min-h-screen bg-black text-white px-6 py-16">
         <div className="max-w-2xl mx-auto">
+          {/* page title */}
           <h1 className="text-4xl font-semibold mb-3">Profile Settings</h1>
+
           <p className="text-white/60 mb-10">
             Update your personal information below.
           </p>
@@ -124,6 +139,8 @@ export default function ProfilePage() {
               <p className="text-white/80 mb-4">
                 You need to sign in to access your profile settings.
               </p>
+
+              {/* go to login */}
               <button
                 onClick={() => router.push("/login")}
                 className="rounded-xl border border-white/20 px-5 py-3 hover:bg-white hover:text-black transition"
@@ -133,11 +150,13 @@ export default function ProfilePage() {
             </div>
           ) : (
             <div className="rounded-3xl border border-white/10 bg-white/5 p-8 space-y-6">
+              {/* name inputs */}
               <div className="grid md:grid-cols-2 gap-5">
                 <div>
                   <label className="block text-sm text-white/70 mb-2">
                     First Name
                   </label>
+
                   <input
                     type="text"
                     name="firstName"
@@ -152,6 +171,7 @@ export default function ProfilePage() {
                   <label className="block text-sm text-white/70 mb-2">
                     Last Name
                   </label>
+
                   <input
                     type="text"
                     name="lastName"
@@ -163,10 +183,12 @@ export default function ProfilePage() {
                 </div>
               </div>
 
+              {/* phone input */}
               <div>
                 <label className="block text-sm text-white/70 mb-2">
                   Phone Number
                 </label>
+
                 <input
                   type="text"
                   name="phone"
@@ -177,10 +199,12 @@ export default function ProfilePage() {
                 />
               </div>
 
+              {/* email input */}
               <div>
                 <label className="block text-sm text-white/70 mb-2">
                   Email Address
                 </label>
+
                 <input
                   type="email"
                   name="email"
@@ -191,12 +215,14 @@ export default function ProfilePage() {
                 />
               </div>
 
+              {/* message */}
               {message && (
                 <div className="text-sm text-white/70 border border-white/10 rounded-xl px-4 py-3 bg-white/5">
                   {message}
                 </div>
               )}
 
+              {/* save button */}
               <button
                 onClick={handleSave}
                 disabled={saving}
