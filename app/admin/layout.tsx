@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRequireAdmin } from "@/app/protectedRoute";
@@ -70,19 +69,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             );
           })}
         </nav>
-
-        {/* Footer */}
-        <div className="px-3 pb-6 border-t border-white/10 pt-4 space-y-1">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-red-400/70 hover:text-red-400 hover:bg-red-400/5 transition text-left"
-            style={{ fontFamily: "Work Sans, sans-serif" }}
-          >
-            <span className="text-base leading-none">⊗</span>
-            Sign Out
-          </button>
-        </div>
-      </aside>
 
       {/* Main content */}
       <main className="flex-1 min-w-0 px-8 py-10 overflow-y-auto">
