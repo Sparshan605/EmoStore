@@ -8,6 +8,7 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import { useRouter } from "next/navigation";
 
+// Profile data structure
 type ProfileData = {
   firstName: string;
   lastName: string;
@@ -18,12 +19,14 @@ type ProfileData = {
 export default function ProfilePage() {
   const router = useRouter();
 
+  // State variables
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"success" | "error" | "">("");
 
+  // Form data
   const [form, setForm] = useState<ProfileData>({
     firstName: "",
     lastName: "",
@@ -31,6 +34,7 @@ export default function ProfilePage() {
     email: "",
   });
 
+  // Check if user is logged in and load profile data
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (!currentUser) {
@@ -42,12 +46,14 @@ export default function ProfilePage() {
       setUser(currentUser);
 
       try {
+        // Get user data from Firestore
         const userRef = doc(db, "users", currentUser.uid);
         const snap = await getDoc(userRef);
 
         if (snap.exists()) {
           const data = snap.data();
 
+          // Fill form with existing data
           setForm({
             firstName: data.firstName || "",
             lastName: data.lastName || "",
@@ -55,6 +61,7 @@ export default function ProfilePage() {
             email: data.email || currentUser.email || "",
           });
         } else {
+          // No profile data yet
           setForm({
             firstName: "",
             lastName: "",
@@ -74,18 +81,21 @@ export default function ProfilePage() {
     return () => unsubscribe();
   }, []);
 
+  // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
 
+    // Clear error message when user types
     if (message) {
       setMessage("");
       setMessageType("");
     }
   };
 
+  // Save profile changes
   const handleSave = async () => {
     if (!user) return;
 
@@ -97,6 +107,7 @@ export default function ProfilePage() {
     setMessage("");
     setMessageType("");
 
+    // Validation checks
     if (!firstName || !lastName) {
       setMessage("First name and last name are required.");
       setMessageType("error");
@@ -154,6 +165,7 @@ export default function ProfilePage() {
     setSaving(true);
 
     try {
+      // Save to Firestore
       await setDoc(
         doc(db, "users", user.uid),
         {
@@ -166,6 +178,7 @@ export default function ProfilePage() {
         { merge: true }
       );
 
+      // Update form state
       setForm({
         firstName,
         lastName,
@@ -190,6 +203,7 @@ export default function ProfilePage() {
 
       <main className="min-h-screen bg-black text-white pt-28 px-6 pb-16">
         <div className="max-w-3xl mx-auto">
+          {/* Page header */}
           <div className="mb-10">
             <p className="text-sm uppercase tracking-[0.3em] text-white/40 mb-3">
               Account
@@ -203,11 +217,13 @@ export default function ProfilePage() {
             </p>
           </div>
 
+          {/* Loading state */}
           {loading ? (
             <div className="rounded-3xl border border-white/10 bg-zinc-900 p-8">
               <p className="text-white/70">Loading profile...</p>
             </div>
           ) : !user ? (
+            // Not logged in
             <div className="rounded-3xl border border-white/10 bg-zinc-900 p-8">
               <p className="text-white/80 mb-4">
                 You need to sign in to view your profile settings.
@@ -220,7 +236,9 @@ export default function ProfilePage() {
               </button>
             </div>
           ) : (
+            // Profile form
             <div className="rounded-3xl border border-white/10 bg-zinc-900 p-8 md:p-10 shadow-2xl">
+              {/* User avatar and info */}
               <div className="flex flex-col md:flex-row md:items-center gap-6 mb-10">
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-900 border border-white/10 flex items-center justify-center text-2xl font-semibold">
                   {form.firstName
@@ -240,6 +258,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
+              {/* Input fields */}
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm text-white/70 mb-2">
@@ -298,6 +317,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
+              {/* Success/Error message */}
               {message && (
                 <div
                   className={`mt-6 rounded-xl px-4 py-3 text-sm border ${
@@ -310,6 +330,7 @@ export default function ProfilePage() {
                 </div>
               )}
 
+              {/* Save button */}
               <div className="mt-8 flex justify-end">
                 <button
                   onClick={handleSave}
